@@ -1,0 +1,13 @@
+torch>=2.0.0
+torchvision
+timm
+transformers
+scikit-learn
+numpy
+pandas
+Pillow
+matplotlib
+pytorch-lightning
+wandb
+opencv-python
+scipy
