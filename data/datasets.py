@@ -47,7 +47,17 @@ class SimpleMedicalDataset(Dataset):
 
     def __getitem__(self, idx):
         row = self.df.iloc[idx]
-        img_path = os.path.join(self.img_root, row['Path'])
+        img_path_raw = row['Path']
+        
+        # Handle different path formats
+        # If path contains 'CheXpert-v1.0-small', strip it and use just the relative path
+        if 'CheXpert-v1.0-small' in img_path_raw:
+            # Extract the part after 'CheXpert-v1.0-small/'
+            img_path_rel = img_path_raw.split('CheXpert-v1.0-small/')[-1]
+        else:
+            img_path_rel = img_path_raw
+        
+        img_path = os.path.join(self.img_root, img_path_rel)
         img = Image.open(img_path).convert('RGB')
         if self.transform:
             img = self.transform(img)

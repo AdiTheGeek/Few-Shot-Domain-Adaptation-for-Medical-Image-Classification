@@ -283,7 +283,7 @@ def main():
         max_epochs=config.epochs,
         accelerator='gpu',  # Use GPU acceleration (Colab Pro+ multi-GPU support)
         devices=args.gpus if args.gpus > 0 else -1,  # -1 = all available GPUs
-        precision=16 if config.mixed_precision else 32,  # Mixed precision (fp16)
+        precision='16-mixed' if config.mixed_precision else 32,  # Mixed precision (fp16)
         callbacks=callbacks,
         logger=logger,
         gradient_clip_val=1.0,

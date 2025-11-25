@@ -14,6 +14,8 @@ class LitModel(pl.LightningModule):
         self.model = model
         self.config = config
         self.criterion = nn.BCEWithLogitsLoss()
+        self.validation_step_outputs = []
+        self.test_step_outputs = []
 
     def forward(self, x):
         return self.model(x)
@@ -33,10 +35,15 @@ class LitModel(pl.LightningModule):
         loss = self.criterion(logits, labels)
         preds = torch.sigmoid(logits).detach().cpu().numpy()
         labels_np = labels.detach().cpu().numpy()
-        self.log('val/loss', loss, prog_bar=True)
-        return {'preds': preds, 'labels': labels_np, 'loss': loss}
+        self.log('val/loss', loss, prog_bar=True, sync_dist=True)
+        output = {'preds': preds, 'labels': labels_np, 'loss': loss}
+        self.validation_step_outputs.append(output)
+        return output
 
-    def validation_epoch_end(self, outputs):
+    def on_validation_epoch_end(self):
+        outputs = self.validation_step_outputs
+        if len(outputs) == 0:
+            return
         preds = np.vstack([o['preds'] for o in outputs])
         labels = np.vstack([o['labels'] for o in outputs])
         auc = compute_auc(preds, labels)
@@ -49,6 +56,7 @@ class LitModel(pl.LightningModule):
             import wandb
             wandb.log({'val/auc': auc, 'val/mean_ap': metrics['mean_ap'], 
                       'val/sensitivity': metrics['mean_sens'], 'val/specificity': metrics['mean_spec']})
+        self.validation_step_outputs.clear()
 
     def test_step(self, batch, batch_idx):
         imgs = batch['image']
@@ -57,9 +65,14 @@ class LitModel(pl.LightningModule):
         loss = self.criterion(logits, labels)
         preds = torch.sigmoid(logits).detach().cpu().numpy()
         labels_np = labels.detach().cpu().numpy()
-        return {'preds': preds, 'labels': labels_np, 'loss': loss}
+        output = {'preds': preds, 'labels': labels_np, 'loss': loss}
+        self.test_step_outputs.append(output)
+        return output
 
-    def test_epoch_end(self, outputs):
+    def on_test_epoch_end(self):
+        outputs = self.test_step_outputs
+        if len(outputs) == 0:
+            return
         preds = np.vstack([o['preds'] for o in outputs])
         labels = np.vstack([o['labels'] for o in outputs])
         metrics = compute_metrics(preds, labels)
@@ -72,6 +85,7 @@ class LitModel(pl.LightningModule):
         print(f"   Mean AP: {metrics['mean_ap']:.4f}")
         print(f"   Sensitivity: {metrics['mean_sens']:.4f}")
         print(f"   Specificity: {metrics['mean_spec']:.4f}\n")
+        self.test_step_outputs.clear()
 
     def configure_optimizers(self):
         if self.config.optimizer == 'adamw':
