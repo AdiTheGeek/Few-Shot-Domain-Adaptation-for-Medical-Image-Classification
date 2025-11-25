@@ -243,22 +243,6 @@ class Config:
 
 ---
 
-## Expected Results
-
-Based on typical few-shot domain adaptation performance (CheXpert → NIH, 50-shot):
-
-| Method | Val AUC | Trainable Params | Training Time |
-|--------|---------|------------------|---------------|
-| Baseline ViT | 0.75-0.78 | 86M (100%) | ~3 hours |
-| LoRA (r=8) | 0.78-0.81 | <1M (<1%) | ~45 min |
-| Adapter (dim=64) | 0.77-0.80 | ~2M (2-3%) | ~1 hour |
-| Prompt Tuning | 0.76-0.79 | <100K (<0.1%) | ~30 min |
-| ResNet-50 | 0.73-0.76 | 23M (100%) | ~2 hours |
-
-*Note: Results vary based on dataset splits, hyperparameters, and random seeds.*
-
----
-
 ## Multi-GPU Training (Colab Pro+)
 
 The training script automatically detects and uses all available GPUs:
