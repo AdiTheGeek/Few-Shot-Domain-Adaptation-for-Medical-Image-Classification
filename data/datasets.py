@@ -18,15 +18,29 @@ CHEXPERT_CONDITIONS = [
 
 class SimpleMedicalDataset(Dataset):
     """Generic CSV-based dataset for CheXpert / ChestX-ray14 style CSVs.
-    CSV must contain a 'Path' column (relative to img_root) and one column per condition.
+    CSV must contain a path column (e.g., 'Path', 'Image Index') and one column per condition.
     """
     def __init__(self, csv_path: str, img_root: str, conditions: List[str]=CHEXPERT_CONDITIONS,
-                 transform=None, uncertainty_policy: str = "U-Zeros"):
+                 transform=None, uncertainty_policy: str = "U-Zeros", path_col: str = None):
         self.df = pd.read_csv(csv_path)
         self.img_root = img_root
         self.conditions = conditions
         self.transform = transform
         self.policy = uncertainty_policy
+        
+        # Auto-detect path column if not specified
+        if path_col is None:
+            if 'Path' in self.df.columns:
+                self.path_col = 'Path'
+            elif 'Image Index' in self.df.columns:
+                self.path_col = 'Image Index'
+            elif 'image_path' in self.df.columns:
+                self.path_col = 'image_path'
+            else:
+                raise ValueError(f"Could not find path column. Available columns: {list(self.df.columns)}")
+        else:
+            self.path_col = path_col
+        
         self._process()
 
     def _process(self):
@@ -47,11 +61,11 @@ class SimpleMedicalDataset(Dataset):
 
     def __getitem__(self, idx):
         row = self.df.iloc[idx]
-        img_path_raw = row['Path']
+        img_path_raw = row[self.path_col]
         
         # Handle different path formats
         # If path contains 'CheXpert-v1.0-small', strip it and use just the relative path
-        if 'CheXpert-v1.0-small' in img_path_raw:
+        if 'CheXpert-v1.0-small' in str(img_path_raw):
             # Extract the part after 'CheXpert-v1.0-small/'
             img_path_rel = img_path_raw.split('CheXpert-v1.0-small/')[-1]
         else:

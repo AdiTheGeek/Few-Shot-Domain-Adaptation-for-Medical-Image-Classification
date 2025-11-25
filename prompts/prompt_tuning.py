@@ -30,21 +30,29 @@ def attach_visual_prompt_to_vit(vit_model: nn.Module, prompt_tokens: int = 10):
         vp = VisualPrompt(prompt_tokens, embed_dim)
         vit_model.visual_prompt = vp
 
-        # Monkey-patch forward_features if possible
-        orig_ff = vit_model.forward_features
-
-        def patched_forward_features(x):
-            x = vit_model.patch_embed(x)
-            cls_token = vit_model.cls_token.expand(x.shape[0], -1, -1)
+        # Store reference to avoid closure issues
+        _vit_model = vit_model
+        
+        # Monkey-patch the full forward method (not just forward_features)
+        # because timm's forward() does more than just call forward_features() + forward_head()
+        def patched_forward(x, attn_mask=None):
+            # Patch embedding
+            x = _vit_model.patch_embed(x)
+            # Prepend class token
+            cls_token = _vit_model.cls_token.expand(x.shape[0], -1, -1)
             x = torch.cat((cls_token, x), dim=1)
-            if hasattr(vit_model, 'visual_prompt'):
-                x = vit_model.visual_prompt(x)
-            x = x + vit_model.pos_embed
-            x = vit_model.pos_drop(x)
-            for blk in vit_model.blocks:
+            # Add positional embeddings BEFORE adding prompts
+            x = x + _vit_model.pos_embed
+            # Now add visual prompts (which don't need positional embeddings)
+            if hasattr(_vit_model, 'visual_prompt'):
+                x = _vit_model.visual_prompt(x)
+            x = _vit_model.pos_drop(x)
+            # Pass through transformer blocks
+            for blk in _vit_model.blocks:
                 x = blk(x)
-            x = vit_model.norm(x)
+            x = _vit_model.norm(x)
+            # Return CLS token features (this is what the ViTWrapper expects)
             return x[:, 0]
 
-        vit_model.forward_features = patched_forward_features
+        vit_model.forward = patched_forward
     return vit_model
