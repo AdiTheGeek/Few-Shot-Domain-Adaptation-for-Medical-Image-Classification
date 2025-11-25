@@ -243,7 +243,7 @@ class Config:
 
 ---
 
-## 🎓 Expected Results
+## Expected Results
 
 Based on typical few-shot domain adaptation performance (CheXpert → NIH, 50-shot):
 
