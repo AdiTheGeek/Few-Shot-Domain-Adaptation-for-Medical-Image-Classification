@@ -6,7 +6,7 @@ This repository implements multiple parameter-efficient adaptation strategies (L
 
 ---
 
-## 🎯 Key Features
+## Key Features
 
 - **Vision Transformer backbone** (timm) with feature extraction
 - **Parameter-efficient adaptation**:
@@ -22,7 +22,7 @@ This repository implements multiple parameter-efficient adaptation strategies (L
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 ├── configs/
@@ -56,7 +56,7 @@ This repository implements multiple parameter-efficient adaptation strategies (L
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Installation
 
@@ -161,7 +161,7 @@ The notebook includes:
 
 ---
 
-## 📊 Evaluation
+## Evaluation
 
 The training script automatically computes:
 - **AUROC** (macro-averaged across 14 pathologies)
@@ -185,7 +185,7 @@ print(f"AUC: {ci_results['mean']:.4f} (95% CI: [{ci_results['ci_lower']:.4f}, {c
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 Key hyperparameters in `configs/config.py`:
 
@@ -219,7 +219,7 @@ class Config:
 
 ---
 
-## 🔬 Adaptation Strategies
+## Adaptation Strategies
 
 ### 1. **LoRA (Low-Rank Adaptation)**
 - Adds trainable low-rank matrices to linear layers
@@ -259,7 +259,7 @@ Based on typical few-shot domain adaptation performance (CheXpert → NIH, 50-sh
 
 ---
 
-## 💻 Multi-GPU Training (Colab Pro+)
+## Multi-GPU Training (Colab Pro+)
 
 The training script automatically detects and uses all available GPUs:
 
@@ -279,22 +279,7 @@ PyTorch Lightning handles distributed training automatically with:
 
 ---
 
-## 📝 Citation
-
-If you use this codebase, please cite:
-
-```bibtex
-@misc{fewshot-da-medical,
-  title={Few-Shot Domain Adaptation for Medical Image Classification},
-  author={Your Name},
-  year={2025},
-  howpublished={\url{https://github.com/YourRepo/Few-Shot-Domain-Adaptation}}
-}
-```
-
----
-
-## 📚 References
+## References
 
 1. Dosovitskiy et al. (2021). "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale." *ICLR*.
 2. Hu et al. (2022). "LoRA: Low-Rank Adaptation of Large Language Models." *ICLR*.
@@ -302,27 +287,3 @@ If you use this codebase, please cite:
 4. Wang et al. (2017). "ChestX-ray8: Hospital-scale Chest X-ray Database." *CVPR*.
 
 ---
-
-## 🤝 Contributing
-
-Contributions are welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Submit a pull request
-
----
-
-## 📄 License
-
-MIT License - see LICENSE file for details.
-<!-- The Config.py file contains only different hyperparameters that you can set and in that the model that is currently selected is resnet and the use_domain_adaptation variable that is used is currently set to False so it will not use the domain adaptation code it has written.
-
-The Evaluator.py file contains the functions which will load the trained models and compute different metrics like AUC etc and plot the training curves
-
-The Dataloader.py just loads the data set and splits the data into training, validation etc
-
-The trainer.py is just the code to train the selected model for multiple epochs
-
-To train on a data set you will have to copy all the codes from these different python files placing it in the order of Config.py, Dataloader.py, models.py, trainer.py, evaluator.py and main_trainer.py and run the code
-
-If you run the code as is then it will not execute any adaptation techniques -->
